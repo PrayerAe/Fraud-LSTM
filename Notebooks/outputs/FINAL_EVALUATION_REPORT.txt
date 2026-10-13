@@ -11,11 +11,13 @@ Fraud Dataset (Kaggle Credit Card Fraud):
   - Test samples: 42,720 (Fraud: 52, Ratio: 0.1217%)
 
 Olist Dataset (Simulasi Injeksi V4):
-  - Test samples: 3,205 (Fraud: 624, Ratio: 19.47%)
+  - Test samples: 3,205 (Anomali yang disuntikkan: 624, Ratio: 19.47%)
+  - Dataset Olist tidak memiliki label fraud. Anomali dibuat dengan injeksi
+    sintetis, jadi hasilnya bukan ukuran kinerja pada fraud nyata.
 
 2. PERFORMANCE ON FRAUD DATASET (TABLE 1)
 ------------------------------------------
-(Analisis: Data sangat tidak seimbang, semua model unsupervised gagal)
+Urutan F1: Standard AE (0.2460) > LSTM-AE (0.0375) > Isolation Forest (0.0000)
 
 LSTM-AE:
   - F1-Score: 0.0375 (Precision: 0.0278, Recall: 0.0577)
@@ -28,7 +30,7 @@ Isolation Forest:
 
 3. PERFORMANCE ON OLIST DATASET (TABLE 2)
 ------------------------------------------
-(Analisis: LSTM-AE (0.59) mengalahkan Standard AE (0.38), namun IF (0.25) gagal)
+Urutan F1: LSTM-AE (0.4225) > Standard AE (0.3283) > Isolation Forest (0.2451)
 
 LSTM-AE:
   - F1-Score: 0.4225 (Precision: 0.4017, Recall: 0.4455)
@@ -39,9 +41,8 @@ Standard AE:
 Isolation Forest:
   - F1-Score: 0.2451 (Precision: 0.2106, Recall: 0.2933)
 
-4. KEY FINDINGS - ANALYSIS BY ANOMALY TYPE (TABLE 4)
+4. ANALYSIS BY ANOMALY TYPE (TABLE 4)
 -----------------------------------------------------
-Temuan ini adalah inti dari penelitian dan membantah hipotesis awal kami.
    Static:
      - LSTM-AE F1-Score: 0.9704
      - Standard AE F1-Score: 0.8528
@@ -51,46 +52,32 @@ Temuan ini adalah inti dari penelitian dan membantah hipotesis awal kami.
      - Standard AE F1-Score: 0.1785
      - Isolation Forest F1-Score: 0.2658
 
-5. CONCLUSIONS (INTERPRETASI HASIL AKHIR)
+5. KESIMPULAN
 ------------------------------------------
-Penelitian ini menghasilkan dua temuan utama, salah satunya bertentangan
-dengan hipotesis awal kami:
+1.  Kaggle. Pada data yang sangat tidak seimbang (0.12% fraud),
+    ketiga model tak terawasi kinerjanya rendah. Standard AE paling tinggi
+    (F1: 0.2460), LSTM-AE (F1: 0.0375), Isolation Forest (F1: 0.0000).
+    Dengan threshold persentil dan hanya 52 fraud di data uji,
+    metode ini belum memadai untuk data tersebut.
 
-1.  **(Sukses Olist - Tabel 2):** Pada dataset simulasi Olist secara keseluruhan,
-    arsitektur sekuensial **LSTM-AE (F1: 0.4225)** terbukti
-    **secara signifikan lebih unggul (+28.69%)** daripada
-    arsitektur statis **Standard AE (F1: 0.3283)**. Ini menunjukkan
-    kemampuannya yang lebih baik dalam menangkap pola gabungan.
+2.  Olist (Tabel 2). LSTM-AE (F1: 0.4225) lebih tinggi
+    28.69% (relatif) daripada Standard AE (F1: 0.3283).
+    Angka ini berasal dari satu kali pelatihan dan satu seed, tanpa uji statistik
+    atau interval kepercayaan, sehingga selisihnya belum bisa disebut signifikan.
 
-2.  **(Temuan Mengejutkan - Tabel 4):** Namun, ketika dibedah berdasarkan tipe anomali,
-    hipotesis kami bahwa LSTM-AE akan unggul pada anomali *temporal* terbukti **salah**.
-    - Pada anomali **Statis** (Freight 5x), **Isolation Forest (F1: 0.95)** adalah pemenangnya,
-      diikuti oleh LSTM-AE (F1: 0.79).
-    - Pada anomali **Temporal** (Jam 3-4 pagi), model statis
-      **Isolation Forest (F1: 1.00)** dan **Standard AE (F1: 0.87)**
-      menunjukkan kinerja hampir sempurna, sementara **LSTM-AE (F1: 0.00)** gagal total.
+3.  Tipe anomali (Tabel 4), pada data Olist yang disuntikkan:
+    - Statis (Freight 5x): LSTM-AE (0.9704) > Standard AE (0.8528) > Isolation Forest (0.7011)
+    - Temporal: LSTM-AE (0.2808) > Isolation Forest (0.2658) > Standard AE (0.1785)
+    F1 LSTM-AE pada anomali temporal jauh di bawah anomali statis, jadi hipotesis
+    bahwa model sekuensial menangkap pola antar-transaksi hanya didukung sebagian.
 
-3.  **(Interpretasi):** Kegagalan LSTM-AE pada anomali temporal (F1 0.00) menunjukkan
-    bahwa anomali yang kami suntikkan ('hour == 3') adalah anomali **statis** sederhana
-    yang tidak memiliki pola *sekuensial* yang kompleks. Model statis
-    (IF/AE) dengan mudah menemukan korelasi statis ini, sementara LSTM-AE
-    yang lebih kompleks (mencari pola *antar* sekuens) gagal menemukannya.
-
-4.  **(Kaggle):** Pada data Kaggle yang sangat tidak seimbang (0.12% fraud),
-    semua model *unsupervised* gagal (F1 < 0.07), membuktikan bahwa
-    metode ini tidak cocok untuk data dengan ketidakseimbangan ekstrem.
-
-6. RESEARCH CONTRIBUTIONS (DISESUAIKAN)
----------------------------------------
-1. Mengusulkan metodologi injeksi anomali (V4) yang valid secara ilmiah
-   pada data e-commerce, yang bebas dari *target leakage* (F1 0.59 vs F1 0.94).
-2. Membuktikan bahwa meskipun LSTM-AE unggul secara *keseluruhan* (Tabel 2),
-   model statis yang lebih sederhana (Isolation Forest)
-   secara tak terduga **jauh lebih efektif** dalam mendeteksi
-   anomali *temporal* dan *statis* yang terisolasi (Tabel 4).
-3. Mendemonstrasikan bahwa arsitektur yang lebih kompleks (LSTM-AE) tidak
-   selalu lebih baik dan bisa gagal total (F1 0.00) pada anomali
-   yang tidak memiliki pola sekuensial yang diharapkan.
+4.  Batasan.
+    - Anomali Olist dibuat sendiri melalui injeksi, bukan fraud nyata.
+    - Urutan pada Olist dibentuk per pelanggan dengan TIMESTEP = 2.
+    - Pada Kaggle tidak ada ID pelanggan, sehingga jendela waktu berisi
+      dua transaksi yang berurutan menurut waktu, bukan riwayat satu pengguna.
+    - Fungsi RealTimeFraudDetector di notebook 06 hanya simulasi, bukan layanan
+      yang dideploy.
 
 ================================================================================
 END OF REPORT
