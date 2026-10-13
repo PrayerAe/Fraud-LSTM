@@ -1,3 +1,3 @@
-Model,"F1-Score (Anomali Statis, Tipe 1)","F1-Score (Anomali Sekuensial, Tipe 3)"
-AE Statis (Optimized),0.02077922077922078,0.056856187290969896
-LSTM-AE (Optimized),0.0,0.0
+version https://git-lfs.github.com/spec/v1
+oid sha256:427b2261f50ebf4f4f7f19886279715b2759467b4005382fc3bb64f6f50e1679
+size 176

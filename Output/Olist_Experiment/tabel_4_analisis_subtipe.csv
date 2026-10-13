@@ -1,3 +1,3 @@
-Model,"Recall (Anomali Statis, Tipe 1&2)","Recall (Anomali Sekuensial, Tipe 3)"
-AE Statis (Optimized),0.9883720930232558,0.9791666666666666
-LSTM-AE (Optimized),1.0,1.0
+version https://git-lfs.github.com/spec/v1
+oid sha256:103eed3754c8a59c6cd3b1270b7d056b6d3a480e91f2eb281982bbe86d017d1b
+size 171
