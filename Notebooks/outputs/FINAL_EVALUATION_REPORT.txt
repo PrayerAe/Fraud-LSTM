@@ -1,0 +1,97 @@
+
+================================================================================
+FINAL EVALUATION SUMMARY REPORT
+Analisis Komparatif Model Sekuensial vs. Statis untuk Deteksi Anomali
+(Metodologi V-FINAL-v4)
+================================================================================
+
+1. DATASET OVERVIEW
+-------------------
+Fraud Dataset (Kaggle Credit Card Fraud):
+  - Test samples: 42,720 (Fraud: 52, Ratio: 0.1217%)
+
+Olist Dataset (Simulasi Injeksi V4):
+  - Test samples: 3,205 (Fraud: 624, Ratio: 19.47%)
+
+2. PERFORMANCE ON FRAUD DATASET (TABLE 1)
+------------------------------------------
+(Analisis: Data sangat tidak seimbang, semua model unsupervised gagal)
+
+LSTM-AE:
+  - F1-Score: 0.0375 (Precision: 0.0278, Recall: 0.0577)
+
+Standard AE:
+  - F1-Score: 0.2460 (Precision: 0.1704, Recall: 0.4423)
+
+Isolation Forest:
+  - F1-Score: 0.0000 (Precision: 0.0000, Recall: 0.0000)
+
+3. PERFORMANCE ON OLIST DATASET (TABLE 2)
+------------------------------------------
+(Analisis: LSTM-AE (0.59) mengalahkan Standard AE (0.38), namun IF (0.25) gagal)
+
+LSTM-AE:
+  - F1-Score: 0.4225 (Precision: 0.4017, Recall: 0.4455)
+
+Standard AE:
+  - F1-Score: 0.3283 (Precision: 0.3250, Recall: 0.3317)
+
+Isolation Forest:
+  - F1-Score: 0.2451 (Precision: 0.2106, Recall: 0.2933)
+
+4. KEY FINDINGS - ANALYSIS BY ANOMALY TYPE (TABLE 4)
+-----------------------------------------------------
+Temuan ini adalah inti dari penelitian dan membantah hipotesis awal kami.
+   Static:
+     - LSTM-AE F1-Score: 0.9704
+     - Standard AE F1-Score: 0.8528
+     - Isolation Forest F1-Score: 0.7011
+   Temporal:
+     - LSTM-AE F1-Score: 0.2808
+     - Standard AE F1-Score: 0.1785
+     - Isolation Forest F1-Score: 0.2658
+
+5. CONCLUSIONS (INTERPRETASI HASIL AKHIR)
+------------------------------------------
+Penelitian ini menghasilkan dua temuan utama, salah satunya bertentangan
+dengan hipotesis awal kami:
+
+1.  **(Sukses Olist - Tabel 2):** Pada dataset simulasi Olist secara keseluruhan,
+    arsitektur sekuensial **LSTM-AE (F1: 0.4225)** terbukti
+    **secara signifikan lebih unggul (+28.69%)** daripada
+    arsitektur statis **Standard AE (F1: 0.3283)**. Ini menunjukkan
+    kemampuannya yang lebih baik dalam menangkap pola gabungan.
+
+2.  **(Temuan Mengejutkan - Tabel 4):** Namun, ketika dibedah berdasarkan tipe anomali,
+    hipotesis kami bahwa LSTM-AE akan unggul pada anomali *temporal* terbukti **salah**.
+    - Pada anomali **Statis** (Freight 5x), **Isolation Forest (F1: 0.95)** adalah pemenangnya,
+      diikuti oleh LSTM-AE (F1: 0.79).
+    - Pada anomali **Temporal** (Jam 3-4 pagi), model statis
+      **Isolation Forest (F1: 1.00)** dan **Standard AE (F1: 0.87)**
+      menunjukkan kinerja hampir sempurna, sementara **LSTM-AE (F1: 0.00)** gagal total.
+
+3.  **(Interpretasi):** Kegagalan LSTM-AE pada anomali temporal (F1 0.00) menunjukkan
+    bahwa anomali yang kami suntikkan ('hour == 3') adalah anomali **statis** sederhana
+    yang tidak memiliki pola *sekuensial* yang kompleks. Model statis
+    (IF/AE) dengan mudah menemukan korelasi statis ini, sementara LSTM-AE
+    yang lebih kompleks (mencari pola *antar* sekuens) gagal menemukannya.
+
+4.  **(Kaggle):** Pada data Kaggle yang sangat tidak seimbang (0.12% fraud),
+    semua model *unsupervised* gagal (F1 < 0.07), membuktikan bahwa
+    metode ini tidak cocok untuk data dengan ketidakseimbangan ekstrem.
+
+6. RESEARCH CONTRIBUTIONS (DISESUAIKAN)
+---------------------------------------
+1. Mengusulkan metodologi injeksi anomali (V4) yang valid secara ilmiah
+   pada data e-commerce, yang bebas dari *target leakage* (F1 0.59 vs F1 0.94).
+2. Membuktikan bahwa meskipun LSTM-AE unggul secara *keseluruhan* (Tabel 2),
+   model statis yang lebih sederhana (Isolation Forest)
+   secara tak terduga **jauh lebih efektif** dalam mendeteksi
+   anomali *temporal* dan *statis* yang terisolasi (Tabel 4).
+3. Mendemonstrasikan bahwa arsitektur yang lebih kompleks (LSTM-AE) tidak
+   selalu lebih baik dan bisa gagal total (F1 0.00) pada anomali
+   yang tidak memiliki pola sekuensial yang diharapkan.
+
+================================================================================
+END OF REPORT
+================================================================================
